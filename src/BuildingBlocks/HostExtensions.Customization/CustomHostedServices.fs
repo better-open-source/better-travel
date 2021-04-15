@@ -1,4 +1,4 @@
-﻿module HostedServices
+﻿module CustomHostedServices
 
 open System
 open System.Threading.Tasks
@@ -14,6 +14,9 @@ type TimedHostedService(timer : Timer, logger : ILogger) =
         member this.StartAsync _ =
             logger.LogInformation "Timed Hosted Service running."
             timer.Elapsed.Add this.doWork
+            // do work is not started immediately after call. it'll wait until first tick
+            this.doWork ()
+            // so we force start
             timer.Start ()
             Task.CompletedTask
         

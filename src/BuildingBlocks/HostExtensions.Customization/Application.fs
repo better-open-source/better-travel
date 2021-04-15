@@ -1,8 +1,8 @@
 ﻿[<AutoOpen>]
 module Application
 
-open System
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Hosting
 
 type AppState =
