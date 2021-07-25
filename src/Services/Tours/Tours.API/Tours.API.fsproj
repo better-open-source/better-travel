@@ -7,7 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="Models.fs" />
         <Compile Include="Utils.fs" />
+        <Compile Include="AuthorizedHttpClient.fs" />
+        <Compile Include="Providers.fs" />
         <Compile Include="HostedServices.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
@@ -18,14 +21,18 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FSharp.Data" Version="4.0.1" />
-      <PackageReference Include="Giraffe" Version="4.1.0" />
+      <PackageReference Include="FSharp.Data" Version="4.1.1" />
+      <PackageReference Include="FsToolkit.ErrorHandling" Version="2.6.0" />
+      <PackageReference Include="FsToolkit.ErrorHandling.TaskResult" Version="2.6.0" />
+      <PackageReference Include="Giraffe" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="RestSharp" Version="106.11.7" />
+      <PackageReference Include="RestSharp" Version="106.12.0" />
+      <PackageReference Update="FSharp.Core" Version="5.0.2" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\BuildingBlocks\Common\Common.fsproj" />
       <ProjectReference Include="..\..\..\BuildingBlocks\HostExtensions.Customization\HostExtensions.Customization.fsproj" />
     </ItemGroup>
 

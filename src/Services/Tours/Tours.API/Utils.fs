@@ -14,11 +14,11 @@ module Configs =
           "filterTourOfferId", 0 ]
         |> Map.ofList
         
-    let hotelsData (countryId : int) =
+    let requestSample (directionId : int) =
         [ "request[CurrentCountryId]", "37";
           "request[NetworkId]", "37";
           "request[CurrencyId]", "0";
-          "request[DirectionId]", $"{countryId}";
+          "request[DirectionId]", $"{directionId}";
           "request[ResortIds]", "";
           "request[HotelClassIds]", "";
           "request[HotelIds]", "";
@@ -60,11 +60,23 @@ module Configs =
           "request[HotelCriteriaIds]", "";
           "keyword", "";
           "maximumRows", "0"; ]
+        |> Map.ofList
+
+    let getHotelsParam (directionId : int) (resortIds : int list) (term : string option) =
+        let resIds = function
+            | ids -> ids
+                     |> List.map ^fun id -> id.ToString()
+                     |> String.concat ","
+        [ "maximumRows", "1000"
+          "keyword", term |> Option.defaultValue ""
+          "request[DirectionId]", directionId.ToString();
+          "request[ResortIds]", resIds resortIds; ]
+        |> Map.ofList
 
 module Urls = 
-    let baseUrl = "https://crm.*.ua"
-    let loginUri = $"{baseUrl}/user/login"
-    let getTourOfferListUri = $"{baseUrl}/TourOffer/GetList"
-    let getHotelsUri = $"{baseUrl}/LiveTourSearch/GeHotels"
-    let getDirectionsUri = $"{baseUrl}/LiveTourSearch/GetDirections"
-    let getResortListUri = $"{baseUrl}/dictionary/directionResortGetList"
+    let baseUrl              = "https://crm.*.ua"
+    let loginUri             = $"{baseUrl}/user/login"
+    let getTourOfferListUri  = $"{baseUrl}/TourOffer/GetList"
+    let getHotelsUri         = $"{baseUrl}/LiveTourSearch/GeHotels"
+    let getDirectionsUri     = $"{baseUrl}/LiveTourSearch/GetDirections"
+    let getResortListUri     = $"{baseUrl}/dictionary/directionResortGetList"
