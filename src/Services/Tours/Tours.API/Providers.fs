@@ -1,6 +1,7 @@
 ﻿module Providers
 
 open System.IO
+open Errors
 open FsToolkit.ErrorHandling.Operator.AsyncResult
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
@@ -20,28 +21,28 @@ let directions =
 let resorts directionId =
     directionsWithResorts
     |> Array.tryFind ^fun x -> x.Id = directionId
-    |> Option.map    ^fun x -> x.Resorts
+    |> Option.map    ^fun x -> Ok x.Resorts
+    |> Option.defaultValue (DirectionNotFound directionId |> AppError.createResult)
     
-let private enrichWithParams dirId resIds term (req : RestRequest) =
-    Configs.getHotelsParam dirId resIds term
-    |> Map.iter ^fun k v -> req.AddParameter(k, v) |> ignore
-    req
-
-let private getHotels (req : RestRequest) =
-    asyncResult {
-        let parseResponse (response : IRestResponse) =
-            JObject.Parse(response.Content).["Items"].Value<JObject>().Properties()
-            |> Seq.map ^fun x -> x.Value
-            |> Seq.map ^fun x -> { Id = x.["Id"].Value<int>(); Name = x.["Name"].Value<string>() }
-            |> Seq.toList
+let private enrichByParams (req : HotelsRequest) (rest : RestRequest) =
+    Configs.getHotelsParam req.DirectionId req.ResortIds req.SearchTerm
+    |> Map.iter ^fun k v -> rest.AddParameter(k, v) |> ignore
+    
+let private parseResponse (response : IRestResponse) =
+    try
+        JObject.Parse(response.Content).["Items"].Value<JObject>().Properties()
+        |> Seq.map ^fun x -> x.Value
+        |> Seq.map ^fun x -> { Id = x.["Id"].Value<int>(); Name = x.["Name"].Value<string>() }
+        |> Seq.toList
+        |> Ok
+    with
+    | exn -> InvalidJsonResponse exn.Message |> AppError.createResult
         
-        return! AuthorizedHttpClient.executeRequestAsync (Urls.getHotelsUri, req)
-        |> AsyncResult.map parseResponse
-    }
+let private getHotels (req : RestRequest) =
+    Client.executeRequestAsync (Urls.getHotelsUri, req)
+    >>= fun req -> Async.retn (parseResponse req)
     
-let hotels directionId resorts term =
-    asyncResult {
-        return! AuthorizedHttpClient.createRequestAsync Method.POST
-        |> AsyncResult.map (enrichWithParams directionId resorts term)
-        |> AsyncResult.bind getHotels
-    }
+let hotels (req : HotelsRequest) =
+    Client.createRequestAsync Method.POST
+    |> AsyncResult.tee (enrichByParams req)
+    >>= getHotels
